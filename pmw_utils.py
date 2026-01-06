@@ -218,7 +218,7 @@ def get_actual_from_prediction(y_pred_array):
 
 
 
-def TLPR2S_model(path_orbit, era5_dpr_base_learner, era5_cpr_base_learner, meta_model, 
+def TLPR2S_model(path_orbit, booster, 
                      snow_rate_booster, rain_rate_booster, 
                      df_cdf_rain, df_cdf_snow):
     import xgboost as xgb
@@ -237,8 +237,8 @@ def TLPR2S_model(path_orbit, era5_dpr_base_learner, era5_cpr_base_learner, meta_
 
 
     input_vars = ['10v', '10h', '18v', '18h','23v','36v', '36h', '89v', '89h', '166v', '166h','183-3', '183-7',
-              'tciw','tclw','tcwv','t2m','cape','u10', 'v10', 'skt','asn', 'rsn', 'cin',
-              'sd', 'tcslw','tcw','swvl1','lsm', 'siconc', 'Latitude','Longitude', 'Month', 'Day', 'mean_aspect', 'elevation_mean']
+              'tciw','tclw','tcwv','t2m','cape','u10', 'v10', 'skt',
+              'sd', 'tcslw','tcw','swvl1','lsm', 'siconc']
 
     x_snow_rate = df_cdf_snow[input_vars]
     dtest_sr = xgb.DMatrix(x_snow_rate)
@@ -253,16 +253,7 @@ def TLPR2S_model(path_orbit, era5_dpr_base_learner, era5_cpr_base_learner, meta_
 
     x = df[input_vars]
     d_x = xgb.DMatrix(x)
-    dpr_pred_proba = era5_dpr_base_learner.predict(d_x)
-    df['dpr_p0'], df['dpr_p1'], df['dpr_p2'] = dpr_pred_proba[:, 0], dpr_pred_proba[:, 1], dpr_pred_proba[:, 2]
-
-    cpr_pred_proba = era5_cpr_base_learner.predict(d_x)
-    df['cpr_p0'], df['cpr_p1'], df['cpr_p2'] = cpr_pred_proba[:, 0], cpr_pred_proba[:, 1], cpr_pred_proba[:, 2]
-
-    meta_input = ['dpr_p0', 'dpr_p1', 'dpr_p2', 'cpr_p0', 'cpr_p1', 'cpr_p2']
-    x_train_meta = df[meta_input]
-    dx_meta = xgb.DMatrix(x_train_meta)
-    y_proba_pred = meta_model.predict(dx_meta)
+    y_proba_pred = booster.predict(d_x)
     y_phase_pred = y_proba_pred.argmax(axis=1)
 
     df['pred_phase'] = y_phase_pred
