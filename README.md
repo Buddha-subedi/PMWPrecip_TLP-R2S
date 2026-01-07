@@ -1,6 +1,5 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Buddha-subedi/Microwave_Precipitation_Retrievals_from_TLP-R2S/blob/main/TLP-R2S_demo.ipynb)
-# Transfer Learning of Global Precipitation from Reanalysis Data to Satellite Observations
-
+# An Incremental Learning Framework Linking Reanalysis and Radar Data for Passive Microwave Precipitation Retrievals
 This repository represents the development of an algorithm, called the Transfer Learning of global Precipitation from Reanalysis data to Satellite observations(TLP-R2S). The algorithm relies on integrating the information content from Earth System Models (ESMs)
 into the retrieval process and allows the fusion of multi-satellite observations across varying spatial and temporal resolutions through meta-model learning. The algorithm first detects the precipitation phase and then estimates its rate,
 while conditioning the results to some atmospheric and surface-type variables.
@@ -68,20 +67,25 @@ df_era5_phase_test  = dfs['era5_test']
 
 <a name="43"></a> <br>
  ### Train the TLP-R2S Model
-TLP-R2S Model has 4 base learners. The hyperparameters and snippet of code adopted for stage 1 and stage 2 for the ERA5-CPR phase detection is provided below
+TLP-R2S Model has 3 base learners. The hyperparameters and snippet of code adopted for stage 1 and stage 2 for the phase detection is provided below
 
 ```python
 #stage 1
+classes = np.unique(df_era5_phase_train['Prcp flag'])
+class_weights = {0: 1, 1: 1.15, 2: 1.32}
+
+sample_weights_70 = df_era5_phase_train['Prcp flag'].map(lambda x: class_weights[classes.tolist().index(x)])
+
 params = {
     'objective': 'multi:softmax',
     'num_class': 3,
     'eval_metric': 'merror',
-    'reg_alpha': 0.095,
-    'reg_lambda': 7.843,
-    'max_depth': 18,
+    'reg_alpha': 1.351,
+    'reg_lambda': 5.219,
+    'max_depth': 14,
     'num_parallel_tree': 3,
-    'learning_rate': 0.330808,
-    'gamma': 0.661776,
+    'learning_rate': 0.41302,
+    'gamma': 0.225,
     'verbosity': 0
 }
 
@@ -89,15 +93,16 @@ booster_era5 = xgb.train(
     params=params,
     dtrain=dtrain,
     evals=evals,
-    num_boost_round=30,
+    num_boost_round=88,
     verbose_eval=True
 )
 
 
 #stage 2
-classes = np.unique(df_70_train_cpr['Prcp flag'])                         
-class_weights = {0: 1, 1: 1.167, 2: 1.766}
-sample_weights_70 = df_70_train_cpr['Prcp flag'].map(lambda x: class_weights[classes.tolist().index(x)])
+classes = np.unique(df_phase_train['Prcp flag'])
+class_weights = {0: 1, 1: 1.267, 2: 1.966}
+sample_weights_sat = df_phase_train['Prcp flag'].map(lambda x: class_weights[classes.tolist().index(x)])
+
 # Set parameters
 params_1 = {
     'objective': 'multi:softmax',
@@ -106,9 +111,9 @@ params_1 = {
     'subsample': 0.5,
     'reg_alpha': 6.948,
     'reg_lambda': 5.0278,
-    'max_depth': 18,
+    'max_depth': 16,
     'num_parallel_tree': 6,
-    'learning_rate': 0.018,
+    'learning_rate': 0.011,
     'gamma': 0.32,
     'verbosity': 0
 }
@@ -117,7 +122,7 @@ booster_era5 = xgb.train(
     params=params_1,
     dtrain=dtrain_era5,
     evals=evals,
-    num_boost_round=30,
+    num_boost_round=83,
     verbose_eval=True
 )
 
@@ -151,15 +156,13 @@ booster_cpr = xgb.train(
 <a name="44"></a> <br>
  ### Orbital Retrievals
 ```python
-[phase, rain, snow, latitude, longitude] = TLPR2S_model(path_orbit_004780, booster_cpr, booster_dpr, meta_model,
-                     snow_rate_booster, rain_rate_booster,
-                     df_cdf_rain, df_cdf_snow);
+[phase, rain, snow, latitude, longitude] = TLPR2S_model(path_orbit_004780, booster, snow_rate_booster, rain_rate_booster, df_cdf_rain, df_cdf_snow);
 ```
 <p align="center">
-  <img src="images/Fig_08.png" alt="Training for ERA5-CPR classifier base learner" width="700" />
+  <img src="images/Fig_04.png" alt="Training for ERA5-CPR classifier base learner" width="700" />
 </p>
 <p align="center">
-  <em>Brightness temperatures from GMI (a–d) and precipitation retrievals from TLP-R2S (e), GPROF (f), DPR (g), and ERA5 (h) for orbit 044780 on January 15, 2022, capturing an extratropical cyclone over the North Atlantic Ocean and the Canadian provinces of Nova Scotia and New Brunswick.</em>
+  <em>Three selected GMI TBs (a--c) and precipitation from MRMS (d), TLP-R2S (e), and GPROF (f) for orbit 045821 on March 23, 2022, over the Midwest United States. Likewise, selected GMI TBs (g--i) and corresponding MRMS (j), TLP-R2S (k), and GPROF (l) precipitation for orbit 045212 on February 11, 2022, over Colorado and Wyoming.</em>
 </p>
 
 
