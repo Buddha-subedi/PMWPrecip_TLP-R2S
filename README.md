@@ -8,7 +8,7 @@ while conditioning the results to some atmospheric and surface-type variables.
   <img src="images/Fig_01.png" width="700" />
 </p>
 
-<p align="center"><em>Transfer Learning of global Precipitation from Reanalysis data to Satellite observations(TLP-R2S) presents an ensemble learning architecture that stacks parallel XGBoost base learners and combines their inference through a meta-model. Step 1 detects the precipitation occurrence and phase, and Step 2 estimates the rain and snow rate, with the subscripts ``L'' and ``R'' denoting labels and rates of the data sets. The retrievals transfer the learning from ERA5 to satellite through incremental training of the base learners in both steps. After learning ERA5, the number of parallel trees, tree booster numbers, depths, and splitting nodes are frozen (FZ) for the top part of the decision trees.</em></p>
+<p align="center"><em>The TLP-R2S architecture employs incremental training of an ensemble of gradient-boosted decision trees to transfer knowledge from ERA5 simulations to spaceborne radar observations. It is a two-step framework: Step 1 performs classification, and Step 2 applies a regression learner depending upon the detected phase. Each step comprises two stages. In Stage I, a finite number of base trees is sequentially boosted to capture prior relationships between input variables and ERA5 precipitation phase and rate. In Stage II, with a frozen pre-trained model, additional boosting rounds are appended to learn posterior relationships between TBs and active radar observations from DPR and CPR, thereby refining phase and rate estimates.</em></p>
 
 <a name="4"></a> <br>
 ## Code
