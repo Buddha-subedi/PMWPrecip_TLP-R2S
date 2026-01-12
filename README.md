@@ -15,7 +15,7 @@ into the retrieval process and allows the fusion of multi-satellite observations
 ###   Setup
 To run this notebook on Google Colab, clone this repository
 ```python
-!git clone https://github.com/Buddha-subedi/Microwave_Precipitation_Retrievals_from_TLP-R2S.git
+!git clone https://github.com/Buddha-subedi/PMWPrecip_TLP-R2S.git
 os.chdir("Microwave_Precipitation_Retrievals_from_TLP-R2S")
 ```
 
