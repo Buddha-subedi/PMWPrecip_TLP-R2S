@@ -1,9 +1,7 @@
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Buddha-subedi/Microwave_Precipitation_Retrievals_from_TLP-R2S/blob/main/TLP-R2S_demo.ipynb)
 # An Incremental Learning Framework Linking Reanalysis and Radar Data for Passive Microwave Precipitation Retrievals
 This repository represents the development of an algorithm, called the Transfer Learning of global Precipitation from Reanalysis data to Satellite observations(TLP-R2S). The algorithm relies on integrating the information content from Earth System Models (ESMs)
-into the retrieval process and allows the fusion of multi-satellite observations across varying spatial and temporal resolutions through meta-model learning. The algorithm first detects the precipitation phase and then estimates its rate,
-while conditioning the results to some atmospheric and surface-type variables.
-
+into the retrieval process and allows the fusion of multi-satellite observations across varying spatial and temporal resolutions. It is a two-step framework: Step 1 performs classification, and Step 2 applies a regression learner depending upon the detected phase. Each step comprises two stages. In Stage I, a finite number of base trees is sequentially boosted to capture prior relationships between input variables and ERA5 precipitation phase and rate. In Stage II, with a frozen pre-trained model, additional boosting rounds are appended to learn posterior relationships between TBs and active radar observations from DPR and CPR, thereby refining phase and rate estimates.
 <p align="center">
   <img src="images/Fig_01.png" width="700" />
 </p>
